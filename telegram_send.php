@@ -2,8 +2,8 @@
 // ═══════════════════════════════════════════
 //  CREDENCIALES — solo viven en este archivo
 // ═══════════════════════════════════════════
-$BOT_TOKEN = '8641560926:AAFoOqOUQ_2oqG98-R-R3DCMKHqBwF8R4NU';
-$CHAT_ID   = '-5044680802'; // número entero o string "-100xxxxxxxxxx" para grupos
+$BOT_TOKEN = '9132938066:AAFo7aypCezgsxGm2PkmDvPyKdJHR-iVlTM';
+$CHAT_ID   = '-5348715412'; // número entero o string "-100xxxxxxxxxx" para grupos
 
 // ═══════════════════════════════════════════
 //  CORS
