@@ -3,7 +3,7 @@
 
 const TELEGRAM_BOT_TOKEN = '9132938066:AAFo7aypCezgsxGm2PkmDvPyKdJHR-iVlTM';
 const TELEGRAM_CHAT_ID = '-5348715412';
-const TELEGRAM_API = `https://api.telegram.org/bot${9132938066:AAFo7aypCezgsxGm2PkmDvPyKdJHR-iVlTM}`;`;
+const TELEGRAM_API = `https://api.telegram.org/bot${9132938066:AAFo7aypCezgsxGm2PkmDvPyKdJHR-iVlTM}`;
 
 // Almacenamiento temporal en memoria (para Vercel)
 if (!global.solicitudes) {
